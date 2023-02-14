@@ -1,0 +1,29 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup>
+
+        <Company>FonRadar A.Ş.</Company>
+        <ProductName>FonRadar.Base.EventBus.Kafka</ProductName>
+        <Authors><![CDATA[Fon Radar A.Ş. <info@fonradar.com>]]></Authors>
+    
+        <Product>$(ProductName)</Product>
+        <AssemblyName>$(ProductName)</AssemblyName>
+        <RootNamespace>$(ProductName)</RootNamespace>
+        
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>11</LangVersion>
+    
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>$(ProductName)</PackageId>
+        <Title>$(ProductName)</Title>
+        <PackageProjectUrl>https://github.com/FonRadar/EventBus.Kafka</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/FonRadar/EventBus.Kafka/blob/main/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/FonRadar/EventBus.Kafka</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>fonradar, kafka</PackageTags>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    
+    </PropertyGroup>
+
+</Project>

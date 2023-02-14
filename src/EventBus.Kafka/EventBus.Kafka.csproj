@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    
+    <Import Project="..\..\EventBus.Kafka.proj"/>
+    
+    <PropertyGroup>
+        <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+        <Version>1.0.4-beta</Version>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="FonRadar.Base.EventBus" Version="1.0.4-beta"/>
+        <PackageReference Include="Confluent.Kafka" Version="1.9.2"/>
+    </ItemGroup>
+    
+    <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+        <!--        <Reference Include="EventBus">-->
+        <!--            <HintPath>..\..\..\EventBus\src\EventBus\bin\Release\net6.0\EventBus.dll</HintPath>-->
+        <!--        </Reference>-->
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0"/>
+    </ItemGroup>
+    
+    <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+        <!--        <Reference Include="EventBus">-->
+        <!--            <HintPath>..\..\..\EventBus\src\EventBus\bin\Release\net7.0\EventBus.dll</HintPath>-->
+        <!--        </Reference>-->
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.3"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <Content Include="..\..\ReadMe.md" Pack="true" PackagePath="\">
+            <Link>ReadMe.md</Link>
+        </Content>
+    </ItemGroup>
+    
+    <PropertyGroup>
+        <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    </PropertyGroup>
+
+
+</Project>

@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{04AE1DAA-5BC5-4C6A-B4FD-9650E0D7671C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2A2C15EB-B986-4E8E-9926-7DE09DBB4ABD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBus.Kafka", "src\EventBus.Kafka\EventBus.Kafka.csproj", "{BFBB45F1-9A53-4024-B064-55F525440D0D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBusKafkaTests", "test\EventBusKafkaTests\EventBusKafkaTests.csproj", "{4C8707A5-90CC-44C8-8466-D4B290609203}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BFBB45F1-9A53-4024-B064-55F525440D0D} = {04AE1DAA-5BC5-4C6A-B4FD-9650E0D7671C}
+		{4C8707A5-90CC-44C8-8466-D4B290609203} = {2A2C15EB-B986-4E8E-9926-7DE09DBB4ABD}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BFBB45F1-9A53-4024-B064-55F525440D0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFBB45F1-9A53-4024-B064-55F525440D0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFBB45F1-9A53-4024-B064-55F525440D0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFBB45F1-9A53-4024-B064-55F525440D0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C8707A5-90CC-44C8-8466-D4B290609203}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C8707A5-90CC-44C8-8466-D4B290609203}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C8707A5-90CC-44C8-8466-D4B290609203}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C8707A5-90CC-44C8-8466-D4B290609203}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
