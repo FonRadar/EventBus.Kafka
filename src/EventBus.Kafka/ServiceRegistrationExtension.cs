@@ -2,6 +2,7 @@
 using FonRadar.Base.EventBus.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -15,11 +16,13 @@ public static class ServiceRegistrationExtension
         )
         where TEventBusType : class, IEventBus
     {
+        serviceCollection.AddTransient<KafkaServiceConfigurationValidator>();
         serviceCollection.AddSingleton<TEventBusType>(provider =>
         {
             ILogger<IEventBus> logger = provider.GetRequiredService<ILogger<IEventBus>>();
             IServiceScopeFactory serviceScopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
             ISubscriptionManager? subscriptionManager = provider.GetService<ISubscriptionManager>();
+            KafkaServiceConfigurationValidator validator = provider.GetRequiredService<KafkaServiceConfigurationValidator>();
             if (subscriptionManager == null)
             {
                 throw new OptionsValidationException("IEventBusSubscriptionManager", typeof(ISubscriptionManager),
@@ -28,24 +31,8 @@ public static class ServiceRegistrationExtension
             
             KafkaServiceConfiguration kafkaConfiguration = new KafkaServiceConfiguration();
             configure(kafkaConfiguration);
-            if (string.IsNullOrEmpty(kafkaConfiguration.Server))
-            {
-                throw new OptionsValidationException("Server", typeof(string),
-                    new[] { "Kafka Server is not defined!" });
-            }
-            
-            if (string.IsNullOrEmpty(kafkaConfiguration.Port))
-            {
-                throw new OptionsValidationException("Port", typeof(string),
-                    new[] { "Kafka Port is not defined!" });
-            }
-            
-            if (string.IsNullOrEmpty(kafkaConfiguration.ConsumerGroupId))
-            {
-                throw new OptionsValidationException("ConsumerGroupId", typeof(string),
-                    new[] { "Kafka ConsumerGroupId is not defined!" });
-            }
-            
+            validator.Validate(kafkaConfiguration);
+
             TEventBusType? eventBus = (TEventBusType)Activator.CreateInstance(typeof(TEventBusType), logger, subscriptionManager, serviceScopeFactory, kafkaConfiguration);
             if (eventBus == null)
             {
@@ -65,12 +52,14 @@ public static class ServiceRegistrationExtension
     )
         where TEventBusType : class, IEventBus
     {
+        serviceCollection.AddTransient<KafkaServiceConfigurationValidator>();
         serviceCollection.AddSingleton<TEventBusType>(provider =>
         {
             ILogger<IEventBus> logger = provider.GetRequiredService<ILogger<IEventBus>>();
             IServiceScopeFactory serviceScopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
             IConfiguration configuration = provider.GetRequiredService<IConfiguration>();
             ISubscriptionManager? subscriptionManager = provider.GetService<ISubscriptionManager>();
+            KafkaServiceConfigurationValidator validator = provider.GetRequiredService<KafkaServiceConfigurationValidator>();
             if (subscriptionManager == null)
             {
                 throw new OptionsValidationException("IEventBusSubscriptionManager", typeof(ISubscriptionManager),
@@ -78,24 +67,8 @@ public static class ServiceRegistrationExtension
             }
 
             KafkaServiceConfiguration kafkaConfiguration = new KafkaServiceConfiguration();
-            configuration.GetSection(section).Bind(kafkaConfiguration); 
-            if (string.IsNullOrEmpty(kafkaConfiguration.Server))
-            {
-                throw new OptionsValidationException("Server", typeof(string),
-                    new[] { "Kafka Server is not defined!" });
-            }
-            
-            if (string.IsNullOrEmpty(kafkaConfiguration.Port))
-            {
-                throw new OptionsValidationException("Port", typeof(string),
-                    new[] { "Kafka Port is not defined!" });
-            }
-            
-            if (string.IsNullOrEmpty(kafkaConfiguration.ConsumerGroupId))
-            {
-                throw new OptionsValidationException("ConsumerGroupId", typeof(string),
-                    new[] { "Kafka ConsumerGroupId is not defined!" });
-            }
+            configuration.GetSection(section).Bind(kafkaConfiguration);
+            validator.Validate(kafkaConfiguration);
 
             TEventBusType? eventBus = (TEventBusType)Activator.CreateInstance(typeof(TEventBusType), logger, subscriptionManager, serviceScopeFactory, kafkaConfiguration);
             if (eventBus == null)
