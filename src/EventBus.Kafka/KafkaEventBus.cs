@@ -20,7 +20,7 @@ public class KafkaEventBus : IKafkaEventBus
     private readonly ProducerConfig _producerConfig;
     private readonly ConsumerConfig _consumerConfig;
     private readonly ConsumerBuilder<Null, string> _consumerBuilder;
-
+   
     public KafkaEventBus(
         ILogger<IEventBus> logger
         , ISubscriptionManager eventBusSubscriptionManager
@@ -38,15 +38,47 @@ public class KafkaEventBus : IKafkaEventBus
             BootstrapServers = $"{this._kafkaServiceConfiguration.Server}:{this._kafkaServiceConfiguration.Port}"
         });
         
+        if (this._kafkaServiceConfiguration.IsUsingAuthentication)
+        {
+            if (Enum.TryParse(_kafkaServiceConfiguration.SaslMechanism, true, out SaslMechanism mechanismValue))
+            {
+                this._producerConfig.SaslMechanism = mechanismValue;
+            }
+            
+            if (Enum.TryParse(_kafkaServiceConfiguration.SecurityProtocol, true, out SecurityProtocol protocolValue))
+            {
+                this._producerConfig.SecurityProtocol = protocolValue;
+            }
+            
+            this._producerConfig.SaslUsername = _kafkaServiceConfiguration.Username;
+            this._producerConfig.SaslPassword = _kafkaServiceConfiguration.Password;
+        }
+
         this._consumerConfig = new ConsumerConfig( new ClientConfig()
         {
             BootstrapServers = $"{this._kafkaServiceConfiguration.Server}:{this._kafkaServiceConfiguration.Port}"
         })
         {
             GroupId = $"{this._kafkaServiceConfiguration.ConsumerGroupId}",
-            AutoOffsetReset = AutoOffsetReset.Earliest
+            AutoOffsetReset = AutoOffsetReset.Earliest,
         };
         
+        if (this._kafkaServiceConfiguration.IsUsingAuthentication)
+        {
+            if (Enum.TryParse(_kafkaServiceConfiguration.SaslMechanism, true, out SaslMechanism mechanismValue))
+            {
+                this._consumerConfig.SaslMechanism = mechanismValue;
+            }
+
+            if (Enum.TryParse(_kafkaServiceConfiguration.SecurityProtocol, true, out SecurityProtocol protocolValue))
+            {
+                this._consumerConfig.SecurityProtocol = protocolValue;
+            }
+
+            this._consumerConfig.SaslUsername = _kafkaServiceConfiguration.Username;
+            this._consumerConfig.SaslPassword = _kafkaServiceConfiguration.Password;
+        }
+
         this._consumerBuilder = new ConsumerBuilder<Null, string>(this._consumerConfig);
     }
 
