@@ -10,6 +10,24 @@ namespace FonRadar.Base.EventBus.Kafka;
 
 public static class ServiceRegistrationExtension
 {
+    public static IEventBusServiceRegistration AddKafkaEventBus(
+        this IEventBusServiceRegistration serviceCollection
+        , string section
+    )
+    {
+        serviceCollection.AddKafkaEventBus<KafkaEventBus>(section);
+        return serviceCollection;
+    }
+    
+    public static IEventBusServiceRegistration AddKafkaEventBus(
+        this IEventBusServiceRegistration serviceCollection
+        , Action<KafkaServiceConfiguration> configure
+    )
+    {
+        serviceCollection.AddKafkaEventBus<KafkaEventBus>(configure);
+        return serviceCollection;
+    }
+    
     public static IEventBusServiceRegistration AddKafkaEventBus<TEventBusType>(
         this IEventBusServiceRegistration serviceCollection
         , Action<KafkaServiceConfiguration> configure
@@ -81,4 +99,5 @@ public static class ServiceRegistrationExtension
         
         return serviceCollection;
     }
+    
 }
