@@ -15,7 +15,7 @@ public static class ServiceRegistrationExtension
         , string section
     )
     {
-        serviceCollection.AddKafkaEventBus<KafkaEventBus>(section);
+        serviceCollection.AddKafkaEventBus<IKafkaEventBus, KafkaEventBus>(section);
         return serviceCollection;
     }
     
@@ -24,18 +24,36 @@ public static class ServiceRegistrationExtension
         , Action<IServiceProvider, KafkaServiceConfiguration> configure
     )
     {
-        serviceCollection.AddKafkaEventBus<KafkaEventBus>(configure);
+        serviceCollection.AddKafkaEventBus<IKafkaEventBus, KafkaEventBus>(configure);
         return serviceCollection;
     }
     
-    public static IEventBusServiceRegistration AddKafkaEventBus<TEventBusType>(
+    public static IEventBusServiceRegistration AddKafkaEventBus<TEventBusType, TEventBusImplementationType>(
         this IEventBusServiceRegistration serviceCollection
-        , Action<IServiceProvider, KafkaServiceConfiguration> configure
-        )
-        where TEventBusType : class, IEventBus
+        , string section
+    )
+        where TEventBusType : class, IKafkaEventBus
+        where TEventBusImplementationType : class, TEventBusType
     {
         serviceCollection.AddTransient<KafkaServiceConfigurationValidator>();
-        serviceCollection.AddSingleton<TEventBusType>(provider =>
+        serviceCollection.AddKafkaEventBus<TEventBusType, TEventBusImplementationType>((provider, kafkaConfiguration) =>
+        {
+            IConfiguration configuration = provider.GetRequiredService<IConfiguration>();
+            configuration.GetSection(section).Bind(kafkaConfiguration);
+        });
+    
+        return serviceCollection;
+    }
+    
+    public static IEventBusServiceRegistration AddKafkaEventBus<TEventBusType, TEventBusImplementationType>(
+        this IEventBusServiceRegistration serviceCollection
+        , Action<IServiceProvider, KafkaServiceConfiguration> configure
+    )
+        where TEventBusType : class, IKafkaEventBus
+        where TEventBusImplementationType : class, TEventBusType
+    {
+        serviceCollection.AddTransient<KafkaServiceConfigurationValidator>();
+        serviceCollection.AddSingleton<TEventBusType, TEventBusImplementationType>(provider =>
         {
             ILogger<IEventBus> logger = provider.GetRequiredService<ILogger<IEventBus>>();
             IServiceScopeFactory serviceScopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
@@ -51,10 +69,10 @@ public static class ServiceRegistrationExtension
             configure(provider, kafkaConfiguration);
             validator.Validate(kafkaConfiguration);
 
-            TEventBusType? eventBus = (TEventBusType)Activator.CreateInstance(typeof(TEventBusType), logger, subscriptionManager, serviceScopeFactory, kafkaConfiguration);
+            TEventBusImplementationType? eventBus = (TEventBusImplementationType)Activator.CreateInstance(typeof(TEventBusImplementationType), logger, subscriptionManager, serviceScopeFactory, kafkaConfiguration);
             if (eventBus == null)
             {
-                throw new NullReferenceException($"An instance would not be initialized from TEventBusType:{typeof(TEventBusType)}");
+                throw new NullReferenceException($"An instance would not be initialized from TEventBusType:{typeof(TEventBusImplementationType)}");
             }
 
             return eventBus;
@@ -62,22 +80,4 @@ public static class ServiceRegistrationExtension
         
         return serviceCollection;
     }
-    
-    
-    public static IEventBusServiceRegistration AddKafkaEventBus<TEventBusType>(
-        this IEventBusServiceRegistration serviceCollection
-        , string section
-    )
-        where TEventBusType : class, IEventBus
-    {
-        serviceCollection.AddTransient<KafkaServiceConfigurationValidator>();
-        serviceCollection.AddKafkaEventBus<TEventBusType>((provider, kafkaConfiguration) =>
-        {
-            IConfiguration configuration = provider.GetRequiredService<IConfiguration>();
-            configuration.GetSection(section).Bind(kafkaConfiguration);
-        });
-    
-        return serviceCollection;
-    }
-    
 }
