@@ -25,7 +25,7 @@ public record KafkaServiceConfiguration
     /// <summary>
     /// If authentication is to be used, it must be set to true.
     /// </summary>
-    public bool IsUsingAuthentication { get; set; }
+    public bool? IsUsingAuthentication { get; set; }
     
     /// <summary>
     /// Kafka Username value for authentication
