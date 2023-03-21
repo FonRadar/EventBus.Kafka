@@ -6,6 +6,12 @@ public class KafkaServiceConfigurationValidator
 {
     public void Validate(KafkaServiceConfiguration kafkaServiceConfiguration)
     {
+        if (kafkaServiceConfiguration.IsUsingAuthentication == null)
+        {
+            throw new OptionsValidationException("IsUsingAuthentication", typeof(bool),
+                new[] { "Kafka IsUsingAuthentication is not defined!" });
+        }
+        
         if (string.IsNullOrEmpty(kafkaServiceConfiguration.Server))
         {
             throw new OptionsValidationException("Server", typeof(string),
@@ -24,7 +30,7 @@ public class KafkaServiceConfigurationValidator
                 new[] { "Kafka ConsumerGroupId is not defined!" });
         }
 
-        if (kafkaServiceConfiguration.IsUsingAuthentication)
+        if (kafkaServiceConfiguration.IsUsingAuthentication.Value)
         {
             if (kafkaServiceConfiguration.Username == null)
             {
