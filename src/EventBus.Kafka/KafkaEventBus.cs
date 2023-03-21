@@ -100,7 +100,7 @@ public class KafkaEventBus : IKafkaEventBus
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Error while publishing: {message}", exception.Message);
+            this._logger.LogError(exception, "Error while publishing: {message}", exception.Message);
             throw;
         }
     }
@@ -134,14 +134,14 @@ public class KafkaEventBus : IKafkaEventBus
                 }
                 catch (JsonException jsonException)
                 {
-                    _logger.LogError(jsonException,
+                    this._logger.LogError(jsonException,
                         "Error while subscribing: {Message} \n Json: {ConsumeResultMessage}", 
                         jsonException.Message,
                         consumeResult.Message.Value);
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError(exception, "Error while subscribing: {Message}", exception.Message);
+                    this._logger.LogError(exception, "Error while subscribing: {Message}", exception.Message);
                 }
             } while (true);
         }, cancellationToken).ConfigureAwait(false);
@@ -158,11 +158,11 @@ public class KafkaEventBus : IKafkaEventBus
         }
         catch (CreateTopicsException createTopicsException)
         {
-            _logger.LogWarning(createTopicsException, "{message}", createTopicsException.Message);
+            this._logger.LogWarning(createTopicsException, "{message}", createTopicsException.Message);
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Error creating topic. {message}", exception.Message);
+            this._logger.LogError(exception, "Error creating topic. {message}", exception.Message);
             throw;
         }
     }
