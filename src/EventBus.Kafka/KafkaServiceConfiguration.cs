@@ -46,4 +46,14 @@ public record KafkaServiceConfiguration
     /// Kafka <seealso cref="Confluent.Kafka.SecurityProtocol">SecurityProtocol</seealso> value for authentication
     /// </summary>
     public string SecurityProtocol { get; set; }
+
+    /// <summary>
+    /// Retry Count value for producer.
+    /// </summary>
+    public int RetryCount { get; set; } = 3;
+
+    /// <summary>
+    /// Dead Letter value for Kafka Event Bus. If enabled all failed consumer events will be published to Dead Letter topic.
+    /// </summary>
+    public bool EnableDeadLetter { get; set; } = false;
 }
