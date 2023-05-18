@@ -55,7 +55,7 @@ public static class ServiceRegistrationExtension
         serviceCollection.AddTransient<KafkaServiceConfigurationValidator>();
         serviceCollection.AddSingleton<TEventBusType, TEventBusImplementationType>(provider =>
         {
-            ILogger<IEventBus> logger = provider.GetRequiredService<ILogger<KafkaEventBus>>();
+            ILogger<IEventBus> logger = provider.GetRequiredService<ILogger<IEventBus>>();
             IServiceScopeFactory serviceScopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
             ISubscriptionManager? subscriptionManager = provider.GetService<ISubscriptionManager>();
             KafkaServiceConfigurationValidator validator = provider.GetRequiredService<KafkaServiceConfigurationValidator>();

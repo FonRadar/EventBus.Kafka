@@ -14,8 +14,9 @@ namespace FonRadar.Base.EventBus.Kafka;
 
 public class KafkaEventBus : IKafkaEventBus
 {
-    private const string DEAD_LETTER = "DeadLetter";
+    private const string DEAD_LETTER_TOPIC_NAME = "DeadLetter";
     private const int DELAY = 1;
+    private const int PASSED_TIME = 10; 
     
     private readonly int RETRY_COUNT;
     private readonly bool ENABLE_DEAD_LETTER;
@@ -172,7 +173,7 @@ public class KafkaEventBus : IKafkaEventBus
         try
         {
             IAdminClient adminClient = new AdminClientBuilder(this._producerConfig).Build();
-            List<TopicMetadata>? topics = adminClient.GetMetadata(TimeSpan.FromSeconds(10)).Topics;
+            List<TopicMetadata>? topics = adminClient.GetMetadata(TimeSpan.FromSeconds(PASSED_TIME)).Topics;
             if (!topics.Any(x => x.Topic.Equals(eventName)))
             {
                 TopicSpecification topicSpecification = new TopicSpecification();
@@ -198,7 +199,7 @@ public class KafkaEventBus : IKafkaEventBus
             IProducer<Null, string> producer = new ProducerBuilder<Null, string>(this._producerConfig).Build();
             await this.CreateDeadLetterTopic();
             string serializedValue = JsonSerializer.Serialize(@event);
-            DeliveryResult<Null, string>? deliveryResult = await producer.ProduceAsync(topic: DEAD_LETTER
+            DeliveryResult<Null, string>? deliveryResult = await producer.ProduceAsync(topic: DEAD_LETTER_TOPIC_NAME
                 , new Message<Null, string>()
                 {
                     Value = @serializedValue
@@ -207,7 +208,7 @@ public class KafkaEventBus : IKafkaEventBus
             
             if (deliveryResult.Status != PersistenceStatus.Persisted)
             {
-                await this.RetryFailedEvent(serializedValue, DEAD_LETTER, producer);
+                await this.RetryFailedEvent(serializedValue, DEAD_LETTER_TOPIC_NAME, producer);
             }
         }
         catch (Exception exception)
@@ -222,11 +223,11 @@ public class KafkaEventBus : IKafkaEventBus
         try
         {
             IAdminClient adminClient = new AdminClientBuilder(this._producerConfig).Build();
-            List<TopicMetadata>? topics = adminClient.GetMetadata(TimeSpan.FromSeconds(10)).Topics;
-            if (!topics.Any(x => x.Topic.Equals(DEAD_LETTER)))
+            List<TopicMetadata>? topics = adminClient.GetMetadata(TimeSpan.FromSeconds(PASSED_TIME)).Topics;
+            if (!topics.Any(x => x.Topic.Equals(DEAD_LETTER_TOPIC_NAME)))
             {
                 TopicSpecification topicSpecification = new TopicSpecification();
-                topicSpecification.Name = DEAD_LETTER;
+                topicSpecification.Name = DEAD_LETTER_TOPIC_NAME;
                 await adminClient.CreateTopicsAsync(new[] { topicSpecification });
             }
         }
