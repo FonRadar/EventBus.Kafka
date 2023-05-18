@@ -142,6 +142,12 @@ public class DummyEventHandler : IEventHandler<DummyEvent>
     }
 }
 ```
+<br>
+
+> **Note**
+> When **EnableDeadLetter** configuration is set to **true**, events that throws an exception when handled will be send to the topic named **DeadLetter**
+
+<br>
 
 On service registration part event handlers must be registered 
 ```csharp
@@ -152,6 +158,8 @@ builder.Services.AddScoped<DummyEventHandler>();
 
 <br>
 Consumer must subscribe every event that needs to processed 
+<br>
+<br>
 
 ```csharp
 WebApplication app = builder.Build();
