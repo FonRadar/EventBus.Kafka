@@ -6,7 +6,7 @@
         <ProductName>FonRadar.Base.EventBus.Kafka</ProductName>
         <Authors><![CDATA[Fon Radar A.Ş. <info@fonradar.com>]]></Authors>
     
-        <Version>1.0.7-beta</Version>
+        <Version>1.0.8-beta</Version>
     
         <Product>$(ProductName)</Product>
         <AssemblyName>$(ProductName)</AssemblyName>
