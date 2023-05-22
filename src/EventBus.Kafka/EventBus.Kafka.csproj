@@ -4,11 +4,10 @@
     
     <PropertyGroup>
         <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
-        <Version>1.0.4-beta</Version>
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="FonRadar.Base.EventBus" Version="1.0.4-beta"/>
+        <PackageReference Include="FonRadar.Base.EventBus" Version="1.0.7-beta"/>
         <PackageReference Include="Confluent.Kafka" Version="1.9.2"/>
     </ItemGroup>
     

@@ -8,6 +8,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBus.Kafka", "src\Event
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBusKafkaTests", "test\EventBusKafkaTests\EventBusKafkaTests.csproj", "{4C8707A5-90CC-44C8-8466-D4B290609203}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".solution", ".solution", "{AA2EA018-5A35-4BD5-AC10-A16F3956AA9B}"
+	ProjectSection(SolutionItems) = preProject
+		EventBus.Kafka.proj = EventBus.Kafka.proj
+		ReadMe.md = ReadMe.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
