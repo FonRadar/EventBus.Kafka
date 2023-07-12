@@ -41,6 +41,11 @@ public class KafkaEventBus : IKafkaEventBus
         this.RETRY_COUNT = kafkaServiceConfiguration.RetryCount;
         this.ENABLE_DEAD_LETTER = kafkaServiceConfiguration.EnableDeadLetter;
 
+        this._producerConfig = new ProducerConfig(new ClientConfig()
+        {
+            BootstrapServers = $"{kafkaServiceConfiguration.Server}:{kafkaServiceConfiguration.Port}"
+        });
+
         if (kafkaServiceConfiguration.IsUsingAuthentication.Value)
         {
             if (Enum.TryParse(kafkaServiceConfiguration.SaslMechanism, true, out SaslMechanism mechanismValue))
@@ -58,10 +63,14 @@ public class KafkaEventBus : IKafkaEventBus
             this._producerConfig.SaslPassword = kafkaServiceConfiguration.Password;
         }
 
-        this._producerConfig = new ProducerConfig(new ClientConfig()
+        this._consumerConfig = new ConsumerConfig(new ClientConfig()
         {
             BootstrapServers = $"{kafkaServiceConfiguration.Server}:{kafkaServiceConfiguration.Port}"
-        });
+        })
+        {
+            GroupId = $"{kafkaServiceConfiguration.ConsumerGroupId}",
+            AutoOffsetReset = AutoOffsetReset.Earliest,
+        };
 
         if (kafkaServiceConfiguration.IsUsingAuthentication.Value)
         {
@@ -79,16 +88,6 @@ public class KafkaEventBus : IKafkaEventBus
             this._consumerConfig.SaslUsername = kafkaServiceConfiguration.Username;
             this._consumerConfig.SaslPassword = kafkaServiceConfiguration.Password;
         }
-
-        this._consumerConfig = new ConsumerConfig(new ClientConfig()
-        {
-            BootstrapServers = $"{kafkaServiceConfiguration.Server}:{kafkaServiceConfiguration.Port}"
-        })
-        {
-            GroupId = $"{kafkaServiceConfiguration.ConsumerGroupId}",
-            AutoOffsetReset = AutoOffsetReset.Earliest,
-        };
-
 
         this._consumerBuilder = new ConsumerBuilder<Null, string>(this._consumerConfig);
     }
