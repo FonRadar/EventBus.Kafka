@@ -56,4 +56,16 @@ public record KafkaServiceConfiguration
     /// Dead Letter value for Kafka Event Bus. If enabled all failed consumer events will be published to Dead Letter topic.
     /// </summary>
     public bool EnableDeadLetter { get; set; } = false;
+    
+    /// <summary>
+    /// Flush status Kafka Event Bus. If enabled producer connection closes itself after given <see cref="FlushTimeout">FlushTimeout</see> seconds.
+    /// Default value is true
+    /// </summary>
+    public bool EnableFlush { get; set; } = true;
+    
+    /// <summary>
+    /// Flush Timeout value for Kafka Event Bus. This value timeouts the <see cref="Confluent.Kafka.IProducer.Flush(TimeSpan)">Flush</see> method as given seconds
+    /// Default value is 10
+    /// </summary>
+    public ushort FlushTimeout { get; set; } = 10;
 }

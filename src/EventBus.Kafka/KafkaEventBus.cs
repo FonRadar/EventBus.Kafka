@@ -20,9 +20,12 @@ public class KafkaEventBus : IKafkaEventBus
     
     private readonly int RETRY_COUNT;
     private readonly bool ENABLE_DEAD_LETTER;
+    private readonly bool ENABLE_FLUSH;
+    private readonly ushort FLUSH_TIMEOUT;
     private readonly ILogger<IEventBus> _logger;
     private readonly ISubscriptionManager _eventBusSubscriptionManager;
     private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly IProducer<Null, string> _producer;
 
     private readonly ProducerConfig _producerConfig;
     private readonly ConsumerConfig _consumerConfig;
@@ -40,6 +43,8 @@ public class KafkaEventBus : IKafkaEventBus
         this._serviceScopeFactory = serviceScopeFactory;
         this.RETRY_COUNT = kafkaServiceConfiguration.RetryCount;
         this.ENABLE_DEAD_LETTER = kafkaServiceConfiguration.EnableDeadLetter;
+        this.ENABLE_FLUSH = kafkaServiceConfiguration.EnableFlush;
+        this.FLUSH_TIMEOUT = kafkaServiceConfiguration.FlushTimeout;
 
         this._producerConfig = new ProducerConfig(new ClientConfig()
         {
@@ -90,6 +95,7 @@ public class KafkaEventBus : IKafkaEventBus
         }
 
         this._consumerBuilder = new ConsumerBuilder<Null, string>(this._consumerConfig);
+        this._producer = new ProducerBuilder<Null, string>(this._producerConfig).Build();
     }
 
     public async Task PublishAsync<TEventType>(TEventType @event) where TEventType : IEvent
@@ -97,10 +103,9 @@ public class KafkaEventBus : IKafkaEventBus
         try
         {
             string eventName = typeof(TEventType).Name;
-            IProducer<Null, string> producer = new ProducerBuilder<Null, string>(this._producerConfig).Build();
             await this.CreateTopicAsync(eventName);
             string serializedValue = JsonSerializer.Serialize(@event);
-            DeliveryResult<Null, string>? deliveryResult = await producer.ProduceAsync(topic: eventName
+            DeliveryResult<Null, string>? deliveryResult = await this._producer.ProduceAsync(topic: eventName
                 , new Message<Null, string>()
                 {
                     Value = @serializedValue
@@ -109,8 +114,11 @@ public class KafkaEventBus : IKafkaEventBus
             
             if (deliveryResult.Status != PersistenceStatus.Persisted)
             {
-                await this.RetryFailedEvent(serializedValue, eventName, producer);
+                await this.RetryFailedEvent(serializedValue, eventName, this._producer);
             }
+
+            if (this.ENABLE_FLUSH)
+                this._producer.Flush(TimeSpan.FromSeconds(this.FLUSH_TIMEOUT));
         }
         catch (Exception exception)
         {
@@ -123,48 +131,49 @@ public class KafkaEventBus : IKafkaEventBus
         where TEventType : IEvent
         where TEventHandlerType : class, IEventHandler<TEventType>
     {
-        using IConsumer<Null, string> consumer = this._consumerBuilder.Build();
-        string eventName = typeof(TEventType).Name;
-
-        this._eventBusSubscriptionManager.Subscribe<TEventType, TEventHandlerType>();
-        await this.CreateTopicAsync(eventName);
-        consumer.Subscribe(topic: eventName);
-        // TODO @salih => buradaki looptask'ın yaşam döngüsü ve diğer handler'ın da call edilmesi için geniş bir zamanda test edilmesi gerekiyor
-        await Task.Run(async () =>
+        using (IConsumer<Null, string> consumer = this._consumerBuilder.Build())
         {
-            do
+            string eventName = typeof(TEventType).Name;
+            this._eventBusSubscriptionManager.Subscribe<TEventType, TEventHandlerType>();
+            await this.CreateTopicAsync(eventName);
+            consumer.Subscribe(topic: eventName);
+            // TODO @salih => buradaki looptask'ın yaşam döngüsü ve diğer handler'ın da call edilmesi için geniş bir zamanda test edilmesi gerekiyor
+            await Task.Run(async () =>
             {
-                ConsumeResult<Null, string>? consumeResult = null;
-                try
+                do
                 {
-                    consumeResult = consumer.Consume();
-                    if (this._eventBusSubscriptionManager.HasEvent<TEventType>())
+                    ConsumeResult<Null, string>? consumeResult = null;
+                    try
                     {
-                        using IServiceScope scope = this._serviceScopeFactory.CreateScope();
-                        TEventHandlerType eventHandler = scope.ServiceProvider.GetRequiredService<TEventHandlerType>();
-                        TEventType eventObj = JsonSerializer.Deserialize<TEventType>(consumeResult.Message.Value);
-                        await eventHandler.HandleEvent(eventObj, cancellationToken);
+                        consumeResult = consumer.Consume();
+                        if (this._eventBusSubscriptionManager.HasEvent<TEventType>())
+                        {
+                            using IServiceScope scope = this._serviceScopeFactory.CreateScope();
+                            TEventHandlerType eventHandler = scope.ServiceProvider.GetRequiredService<TEventHandlerType>();
+                            TEventType eventObj = JsonSerializer.Deserialize<TEventType>(consumeResult.Message.Value);
+                            await eventHandler.HandleEvent(eventObj, cancellationToken);
+                        }
                     }
-                }
-                catch (JsonException jsonException)
-                {
-                    this._logger.LogError(jsonException,
-                        "Error while subscribing: {Message} \n Json: {ConsumeResultMessage}",
-                        jsonException.Message,
-                        consumeResult.Message.Value);
-                }
-                catch (Exception exception)
-                {
-                    this._logger.LogError(exception, "Exception occured while consuming {EventName}", eventName);
-                    if (this.ENABLE_DEAD_LETTER)
+                    catch (JsonException jsonException)
                     {
-                        using IServiceScope scope = this._serviceScopeFactory.CreateScope();
-                        TEventType eventObj = JsonSerializer.Deserialize<TEventType>(consumeResult.Message.Value) ?? throw new NullReferenceException();
-                        await this.PublishDeadLetterEventAsync(eventObj);
+                        this._logger.LogError(jsonException,
+                            "Error while subscribing: {Message} \n Json: {ConsumeResultMessage}",
+                            jsonException.Message,
+                            consumeResult.Message.Value);
                     }
-                }
-            } while (true);
-        }, cancellationToken).ConfigureAwait(false);
+                    catch (Exception exception)
+                    {
+                        this._logger.LogError(exception, "Exception occured while consuming {EventName}", eventName);
+                        if (this.ENABLE_DEAD_LETTER)
+                        {
+                            using IServiceScope scope = this._serviceScopeFactory.CreateScope();
+                            TEventType eventObj = JsonSerializer.Deserialize<TEventType>(consumeResult.Message.Value) ?? throw new NullReferenceException();
+                            await this.PublishDeadLetterEventAsync(eventObj);
+                        }
+                    }
+                } while (true);
+            }, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     public async Task CreateTopicAsync(string eventName)
