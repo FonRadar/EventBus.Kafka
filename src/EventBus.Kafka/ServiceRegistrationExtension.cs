@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using FonRadar.Base.EventBus.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,6 +56,17 @@ public static class ServiceRegistrationExtension
         where TEventBusImplementationType : class, TEventBusType
     {
         serviceCollection.AddTransient<KafkaServiceConfigurationValidator>();
+        
+        List<Type> eventHandlers = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(x => x.GetTypes())
+            .Where(t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>)))
+            .ToList();
+
+        foreach (Type eventHandler in eventHandlers)
+        {
+            serviceCollection.AddScoped(eventHandler);
+        }
+        
         serviceCollection.AddSingleton<TEventBusType, TEventBusImplementationType>(provider =>
         {
             ILogger<IEventBus> logger = provider.GetRequiredService<ILogger<IEventBus>>();
