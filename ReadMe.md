@@ -69,18 +69,15 @@ An example appsettings section with authentication
 > Supported Sasl mechanisms values are GSSAPI, PLAIN, SCRAM-SHA-256, SCRAM-SHA-512, OAUTHBEARER <br>
 > Supported Security Protocol values are Plaintext, Ssl, SaslPlaintext, SaslSsl
 <br>
-These registration types are also supporting generic arguments
-<br> <br>
-
-> **Note**
+These registration types are also supporting generic arguments<br>
 > <br>
-> <b>EnableFlush<b>
+> EnableFlush
 > <br>
 > Flush status Kafka Event Bus. If enabled producer connection closes itself after given <see cref="FlushTimeout">FlushTimeout</see> seconds. <br>
 > Default value is true
 > <br>
-> 
-> <b>FlushTimeout<b>
+> <br>
+> FlushTimeout
 > <br>
 > Flush Timeout value for Kafka Event Bus. This value timeouts the <see cref="Confluent.Kafka.IProducer.Flush(TimeSpan)">Flush</see> method as given seconds
 > <br>
