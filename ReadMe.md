@@ -38,7 +38,9 @@ An example appsettings section without authentication
         "Username": "these",
         "Password": "values",
         "SaslMechanism" : "are",
-        "SecurityProtocol" : "optional"
+        "SecurityProtocol" : "optional",
+        "EnableFlush" : "true",
+        "FlushTimeout" : 10
     }
 }
 ```
@@ -56,7 +58,9 @@ An example appsettings section with authentication
         "Username": "admin",
         "Password": "admin-secret",
         "SaslMechanism" : "PLAIN",
-        "SecurityProtocol" : "Plaintext"
+        "SecurityProtocol" : "Plaintext",
+        "EnableFlush" : "true",
+        "FlushTimeout" : 10
     }
 }
 ```
@@ -65,8 +69,20 @@ An example appsettings section with authentication
 > Supported Sasl mechanisms values are GSSAPI, PLAIN, SCRAM-SHA-256, SCRAM-SHA-512, OAUTHBEARER <br>
 > Supported Security Protocol values are Plaintext, Ssl, SaslPlaintext, SaslSsl
 <br>
-These registration types are also supporting generic arguments
-<br> <br>
+These registration types are also supporting generic arguments<br>
+> <br>
+> EnableFlush
+> <br>
+> Flush status Kafka Event Bus. If enabled producer connection closes itself after given <see cref="FlushTimeout">FlushTimeout</see> seconds. <br>
+> Default value is true
+> <br>
+> <br>
+> FlushTimeout
+> <br>
+> Flush Timeout value for Kafka Event Bus. This value timeouts the <see cref="Confluent.Kafka.IProducer.Flush(TimeSpan)">Flush</see> method as given seconds
+> <br>
+> Default value is 10
+> <br>
 
 ```csharp
 public interface INotificationServiceEventBus : IKafkaEventBus
